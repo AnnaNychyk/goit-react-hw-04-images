@@ -1,51 +1,44 @@
-import { Component } from "react";
-import { Notify } from "notiflix/build/notiflix-notify-aio";
-import Searchbar from "./components/Searchbar/Searchbar";
-import ImageGallery from "./components/ImageGallery/ImageGallery";
-import fetchImages from "./services/api";
-import Button from "./components/Button/Button";
-import Loader from "./components/Loader/Loader";
-import Modal from "./components/Modal/Modal";
+import { Component } from 'react';
+import Searchbar from './components/Searchbar/Searchbar';
+import ImageGallery from './components/ImageGallery/ImageGallery';
+import fetchImages from './services/api';
+import Button from './components/Button/Button';
+import Loader from './components/Loader/Loader';
+import Modal from './components/Modal/Modal';
 
 class App extends Component {
   state = {
-    searchWord: "",
+    searchWord: '',
     page: 1,
     loading: false,
     images: [],
     error: null,
     showModal: false,
-    largeImageURL: "",
-    totalHits: "",
+    largeImageURL: '',
+    totalHits: '',
   };
 
   componentDidUpdate(prevProps, prevState) {
     const { searchWord, page } = this.state;
 
-    //  if (this.state.images === []) {
-    //    return Notify.failure(
-    //      "Sorry, there are no images matching your search query."
-    //    );
-    //  }
-
     if (prevState.searchWord !== searchWord || prevState.page !== page) {
       this.setState({ loading: true });
 
       fetchImages(this.state)
-        .then((res) => {
+        .then(res => {
           this.setState({
             images: [...this.state.images, ...res.hits],
             totalHits: res.totalHits,
           });
         })
-        .catch((res) => {
+        .catch(res => {
           console.log(res);
         })
         .finally(() => this.setState({ loading: false }));
     }
   }
 
-  handleFormSubmit = (searchWord) => {
+  handleFormSubmit = searchWord => {
     this.setState({
       searchWord,
       images: [],
@@ -54,12 +47,12 @@ class App extends Component {
   };
 
   handleLoadMore = () => {
-    this.setState((prevState) => ({
+    this.setState(prevState => ({
       page: prevState.page + 1,
     }));
   };
 
-  openModal = (largeImageURL) => {
+  openModal = largeImageURL => {
     this.setState({
       showModal: true,
       largeImageURL: largeImageURL,
