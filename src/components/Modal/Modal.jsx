@@ -1,48 +1,44 @@
-// import PropTypes from "prop-types";
-import { Component } from "react";
-import { createPortal } from "react-dom";
-import styles from "./Modal.module.css";
+import styles from './Modal.module.css';
+import PropTypes from 'prop-types';
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
-const modalRoot = document.querySelector("#modal-root");
+const modalRoot = document.querySelector('#modal-root');
 
-class Modal extends Component {
-  //   static propTypes = {
-  //     tags: PropTypes.string,
-  //     modalImg: PropTypes.string,
-  //   };
+const Modal = ({ onCloseModal, largeImageURL }) => {
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
 
-  componentDidMount() {
-    window.addEventListener("keydown", this.handleKeyDown);
-  }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  });
 
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this.handleKeyDown);
-  }
-
-  handleKeyDown = (e) => {
-    if (e.code === "Escape") {
-      this.props.onCloseModal();
+  const handleKeyDown = e => {
+    if (e.code === 'Escape') {
+      onCloseModal();
     }
   };
 
-  handleOverlayClick = (e) => {
+  const handleOverlayClick = e => {
     if (e.currentTarget === e.target) {
-      this.props.onCloseModal();
+      onCloseModal();
     }
   };
 
-  render() {
-    const { tags, largeImageURL } = this.props;
+  return createPortal(
+    <div className={styles.overlay} onClick={handleOverlayClick}>
+      <div className={styles.modal}>
+        <img src={largeImageURL} alt="" />
+      </div>
+    </div>,
+    modalRoot
+  );
+};
 
-    return createPortal(
-      <div className={styles.overlay} onClick={this.handleOverlayClick}>
-        <div className={styles.modal}>
-          <img src={largeImageURL} alt={tags} />
-        </div>
-      </div>,
-      modalRoot
-    );
-  }
-}
+Modal.propTypes = {
+  largeImageURL: PropTypes.string,
+  onCloseModal: PropTypes.func,
+};
 
 export default Modal;

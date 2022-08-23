@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Searchbar from './components/Searchbar/Searchbar';
 import ImageGallery from './components/ImageGallery/ImageGallery';
 import fetchImages from './services/api';
@@ -6,67 +6,53 @@ import Button from './components/Button/Button';
 import Loader from './components/Loader/Loader';
 import Modal from './components/Modal/Modal';
 
-class App extends Component {
-  state = {
-    searchWord: '',
-    page: 1,
-    loading: false,
-    images: [],
-    error: null,
-    showModal: false,
-    largeImageURL: '',
-    totalHits: '',
-  };
+const App = () => {
+  const [searchWord, setSearchWord] = useState('');
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [totalHits, setTotalHits] = useState('');
 
-  componentDidUpdate(prevProps, prevState) {
-    const { searchWord, page } = this.state;
-
-    if (prevState.searchWord !== searchWord || prevState.page !== page) {
-      this.setState({ loading: true });
-
-      fetchImages(this.state)
-        .then(res => {
-          this.setState({
-            images: [...this.state.images, ...res.hits],
-            totalHits: res.totalHits,
-          });
-        })
-        .catch(res => {
-          console.log(res);
-        })
-        .finally(() => this.setState({ loading: false }));
+  useEffect(() => {
+    if (!searchWord) {
+      return;
     }
-  }
 
-  handleFormSubmit = searchWord => {
-    this.setState({
-      searchWord,
-      images: [],
-      page: 1,
-    });
+    setLoading(true);
+
+    fetchImages({ searchWord, page })
+      .then(res => {
+        setImages(prevState => [...prevState, ...res.hits]);
+        setTotalHits(res.totalHits);
+      })
+      .catch(res => {
+        console.log(res);
+      })
+      .finally(() => setLoading(false));
+  }, [searchWord, page]);
+
+  const handleFormSubmit = searchWord => {
+    setImages([]);
+    setSearchWord(searchWord);
+    setPage(1);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  openModal = largeImageURL => {
-    this.setState({
-      showModal: true,
-      largeImageURL: largeImageURL,
-    });
+  const openModal = largeImageURL => {
+    setShowModal(true);
+    setLargeImageURL(largeImageURL);
   };
 
-  closeModal = () => {
-    this.setState({
-      showModal: false,
-    });
+  const closeModal = () => {
+    setShowModal(false);
   };
 
-  showButton = () => {
-    const { images, loading, totalHits } = this.state;
+  const showButton = () => {
     if (loading) {
       return false;
     }
@@ -78,28 +64,21 @@ class App extends Component {
     }
   };
 
-  render() {
-    const { images, loading, showModal, tags, largeImageURL } = this.state;
-    return (
-      <>
-        <Searchbar onSubmit={this.handleFormSubmit} />
+  return (
+    <>
+      <Searchbar onSubmit={handleFormSubmit} />
 
-        {loading && <Loader />}
+      {loading && <Loader />}
 
-        <ImageGallery images={images} onOpenModal={this.openModal} />
+      <ImageGallery images={images} onOpenModal={openModal} />
 
-        {this.showButton() && <Button onMoreClick={this.handleLoadMore} />}
+      {showButton() && <Button onMoreClick={handleLoadMore} />}
 
-        {showModal && (
-          <Modal
-            largeImageURL={largeImageURL}
-            tags={tags}
-            onCloseModal={this.closeModal}
-          />
-        )}
-      </>
-    );
-  }
-}
+      {showModal && (
+        <Modal largeImageURL={largeImageURL} onCloseModal={closeModal} />
+      )}
+    </>
+  );
+};
 
 export default App;

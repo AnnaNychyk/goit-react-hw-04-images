@@ -1,54 +1,50 @@
-import { Component } from "react";
-import PropTypes from "prop-types";
-import { Notify } from "notiflix/build/notiflix-notify-aio";
-import styles from "./Searchbar.module.css";
+import { useState } from 'react';
+import PropTypes from 'prop-types';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import styles from './Searchbar.module.css';
 
-class Searchbar extends Component {
-  static propTypes = {
-    onSubmit: PropTypes.func,
+const Searchbar = ({ onSubmit }) => {
+  const [searchWord, setSearchWord] = useState('');
+
+  const handleWordChange = event => {
+    setSearchWord(event.currentTarget.value.toLowerCase());
   };
 
-  state = {
-    searchWord: "",
-  };
-
-  handleWordChange = (event) => {
-    this.setState({ searchWord: event.currentTarget.value.toLowerCase() });
-  };
-
-  handleSubmit = (event) => {
+  const handleSubmit = event => {
     event.preventDefault();
 
-    if (this.state.searchWord.trim() === "") {
-      return Notify.warning("Please enter any word");
+    if (searchWord.trim() === '') {
+      return Notify.warning('Please enter any word');
     }
 
-    this.props.onSubmit(this.state.searchWord);
-    this.setState({ searchWord: "" });
+    onSubmit(searchWord);
+    setSearchWord('');
   };
 
-  render() {
-    return (
-      <header className={styles.searchbar}>
-        <form className={styles.form} onSubmit={this.handleSubmit}>
-          <button type="submit" className={styles.button}>
-            <span className={styles.buttonLabel}>Search</span>
-          </button>
+  return (
+    <header className={styles.searchbar}>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <button type="submit" className={styles.button}>
+          <span className={styles.buttonLabel}>Search</span>
+        </button>
 
-          <input
-            onChange={this.handleWordChange}
-            name="word"
-            value={this.state.searchWord}
-            className={styles.input}
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-          />
-        </form>
-      </header>
-    );
-  }
-}
+        <input
+          onChange={handleWordChange}
+          name="word"
+          value={searchWord}
+          className={styles.input}
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+        />
+      </form>
+    </header>
+  );
+};
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func,
+};
 
 export default Searchbar;
